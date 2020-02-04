@@ -2,7 +2,7 @@
 
 In this step you will migrate some Weblogic-specific code in the app to use standard Java EE interfaces.
 
-####1. Getting Ready for the labs
+#### 1. Getting Ready for the labs
 
 ---
 
@@ -10,21 +10,13 @@ In this step you will migrate some Weblogic-specific code in the app to use stan
 
 You will be using Red Hat CodeReady Workspaces, an online IDE based on [Eclipe Che](https://www.eclipse.org/che/){:target="_blank"}. **Changes to files are auto-saved every few seconds**, so you don't need to explicitly save changes.
 
-To get started, [access the Che instance]({{ ECLIPSE_CHE_URL }}){:target="_blank"} and log in using the username and password you've been assigned (e.g. `{{ CHE_USER_NAME }}/{{ CHE_USER_PASSWORD }}`):
+To get started, access the Che instance and log in using the username and password you've been assigned (e.g. `{{ CHE_USER_NAME }}/{{ CHE_USER_PASSWORD }}`). Open a browser tab and point to the next url. Don't forget to substitute `userXX` by your own user name.
+
+**Copy / Paste / Modify this url:** *{{ ECLIPSE_CHE_URL }}/f?url={{GIT_URL}}/userXX/cloud-native-workshop-v2m1-labs/raw/master/devfile.yaml*
 
 ![cdw]({% image_path che-login.png %})
 
-Once you log in, you'll be placed on your personal dashboard. We've pre-created workspaces for you to use. Click on the name of the pre-created workspace on the left, as shown below (the name will be different depending on your assigned number). You can also click on the name of the workspace in the center, and then click on the green button that says "OPEN" on the top right hand side of the screen:
-
-![cdw]({% image_path che-precreated.png %})
-
-After a minute or two, you'll be placed in the workspace:
-
-![cdw]({% image_path che-workspace.png %})
-
-> **NOTE**:
->
-> You may see random errors about websocket connections, plugins failing to load or other errors in the `dev-machine` window. You can ignore them as these are known issues that do not affect this workshop.
+Once you log in, you'll be placed on your own workspace with all the tools you need to finish the lab.
 
 To gain extra screen space, click on the yellow arrow to hide the left menu (you won't need it):
 
@@ -32,42 +24,13 @@ To gain extra screen space, click on the yellow arrow to hide the left menu (you
 
 Users of Eclipse, IntelliJ IDEA or Visual Studio Code will see a familiar layout: a project/file browser on the left, a code editor on the right, and a terminal at the bottom. You'll use all of these during the course of this workshop, so keep this browser tab open throughout. **If things get weird, you can simply reload the browser tab to refresh the view.**
 
-In the project explorer pane, click on the `Import Projects...` and enter the following:
 
-  * Version Control System: `GIT`
-  * URL: `{{GIT_URL}}/userXX/cloud-native-workshop-v2m1-labs.git`(IMPORTANT: replace userXX with your lab user)
-  * Check `Import recursively (for multi-module projects)`
-  * Name: `cloud-native-workshop-v2m1-labs`
-
-![codeready-workspace-import]({% image_path codeready-workspace-import.png %}){:width="700px"}
-
-At the next screen, leave the project type set to `Blank` and click **Save**.
-
-![codeready-workspace-import-save]({% image_path codeready-workspace-import-save.png %}){:width="700px"}
-
-The project is imported into your workspace and is visible in the project explorer.
-
-### Convert Projects
-
-Expand the top-level project and look carefully at the icons next to each of the `monolith`, `catalog` and `inventory` directories. **Do you see a blue Maven icon as shown below?**
-
-![maven-icon]({% image_path maven-icon.png %}){:width="900px"}
-
-If you do **not** see these icons, then you'll need to right-click on each of the projects, and select "Convert to Project" and convert them to the _Maven_ type project as shown below:
-
-![codeready-workspace-convert]({% image_path codeready-workspace-convert.png %}){:width="500px"}
-
-Choose **Maven** from the project configurations and then click on **Save**.
-
-![codeready-workspace-maven]({% image_path codeready-workspace-maven.png %}){:width="700px"}
-
-Be sure to do this for each of the `monolith`, `inventory` and `catalog` projects.
 
 > `NOTE`: the Terminal window in CodeReady Workspaces. For the rest of these labs, anytime you need to run a command in a terminal, you can use the CodeReady Workspaces Terminal window.
 
 ![codeready-workspace-terminal]({% image_path codeready-workspace-terminal.png %})
 
-####2. Review the issue related to `ApplicationLifecycleListener`
+#### 2. Review the issue related to `ApplicationLifecycleListener`
 
 ---
 
