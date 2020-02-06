@@ -1,30 +1,22 @@
 ## Lab4 - Breaking the monolith apart - II
 
-In the previous lab, you learned how to take an existing monolithic app and refactor a single _inventory_ service using
-Quarkus. The previous lab resulted in you creating an inventory service, but so far we haven't started
-_strangling_ the monolith. That is because the inventory service is never called directly by the UI. It's a backend service
-that is only used only by other backend services. In this lab, you will create the catalog service and the catalog
-service will call the inventory service. When you are ready, you will change the route to tie the UI calls to new service.
+In the previous lab, you learned how to take an existing monolithic app and refactor a single _inventory_ service using Quarkus. The previous lab resulted in you creating an inventory service, but so far we haven't started _strangling_ the monolith. That is because the inventory service is never called directly by the UI. It's a backend service
+that is only used only by other backend services. In this lab, you will create the catalog service and the catalog service will call the inventory service. When you are ready, you will change the route to tie the UI calls to new service.
 
-To implement this, we are going to use the Spring Framework. The reason for using Spring for this service is to introduce you
-to Spring Development, and how [Red Hat Runtimes](https://www.redhat.com/en/products/runtimes){:target="_blank"} helps to
-make Spring development on Kubernetes easy. In real life, the reason for choosing Spring vs. others mostly depends on
+To implement this, we are going to use the Spring Framework. The reason for using Spring for this service is to introduce you to Spring Development, and how [Red Hat Runtimes](https://www.redhat.com/en/products/runtimes){:target="_blank"} helps to make Spring development on Kubernetes easy. In real life, the reason for choosing Spring vs. others mostly depends on
 personal preferences, like existing knowledge, etc. At the core Spring and Java EE are very similar.
 
 The goal is to produce something like:
 
-![Greeting]({% image_path catalog-goal.png %}){:width="700px"}
+![Greeting]({% image_path catalog-goal.png %}){:width="500px"}
 
 #### What is Spring Framework?
 
 ---
 
-Spring is one of the most popular Java Frameworks and offers an alternative to the Java EE programming model. Spring
-is also very popular for building applications based on microservices architectures. Spring Boot is a popular tool in
-the Spring ecosystem that helps with organizing and using 3rd-party libraries together with Spring and also provides a
-mechanism for boot strapping embeddable runtimes, like Apache Tomcat. Bootable applications (sometimes also called _fat jars_)
-fits the container model very well since in a container platform like OpenShift responsibilities like starting, stopping and
-monitoring applications are then handled by the container platform instead of an Application Server.
+Spring is one of the most popular Java Frameworks and offers an alternative to the Java EE programming model. Spring is also very popular for building applications based on microservices architectures. Spring Boot is a popular tool in
+the Spring ecosystem that helps with organizing and using 3rd-party libraries together with Spring and also provides a mechanism for boot strapping embeddable runtimes, like Apache Tomcat. Bootable applications (sometimes also called _fat jars_)
+fits the container model very well since in a container platform like OpenShift responsibilities like starting, stopping and monitoring applications are then handled by the container platform instead of an Application Server.
 
 #### Aggregate microservices calls
 
@@ -33,7 +25,7 @@ monitoring applications are then handled by the container platform instead of an
 Another thing you will learn in this lab is one of the techniques to aggregate services using service-to-service calls.
 Other possible solutions would be to use a microservices gateway or combine services using client-side logic.
 
-####1. Setup a Catalog project
+#### 1. Setup a Catalog project
 
 ---
 
@@ -43,7 +35,7 @@ In the project explorer, right-click on _catalog_ and then change a directory to
 
 ![catalog-setup]({% image_path catalog-project.png %}){:width="500px"}
 
-####2. Examine the Maven project structure
+#### 2. Examine the Maven project structure
 
 ---
 
@@ -52,12 +44,10 @@ subdirectories according to Maven best practices.
 
 > Click on the catalog folder in the project explorer and navigate to see its folders and files.
 
-As you can see, there are some files that we have prepared for you in the project. Under _src/main/resources/static/index.html_
-we have for example prepared a simple html-based UI file for you. This matches very well what you would get if you generated an empty project from the
+As you can see, there are some files that we have prepared for you in the project. Under _src/main/resources/static/index.html_ we have for example prepared a simple html-based UI file for you. This matches very well what you would get if you generated an empty project from the
 [Spring Initializr](https://start.spring.io){:target="_blank"} web page.
 
-One file that differs slightly is the `pom.xml`. Please open the and examine it a bit closer (but do not change anything
-at this time)
+One file that differs slightly is the `pom.xml`. Please open the and examine it a bit closer (but do not change anything at this time)
 
 As you review the content, you will notice that there are a lot of _TODO_ comments. **Do not remove them!** These comments are used as a marker and without them, you will not be able to finish this lab.
 
@@ -79,15 +69,13 @@ Notice that we are not using the default BOM (Bill of material) that Spring Boot
 
 We use this bill of material to make sure that we are using the version of for example Apache Tomcat that Red Hat supports.
 
-####3. Adding web (Apache Tomcat) to the application
+#### 3. Adding web (Apache Tomcat) to the application
 
 ---
 
-Our application will be a web application, so we need to use a servlet container like Apache Tomcat or
-Undertow. Since Red Hat offers support for Apache Tomcat (e.g., security patches, bug fixes, etc.), we will use it.
+Our application will be a web application, so we need to use a servlet container like Apache Tomcat or Undertow. Since Red Hat offers support for Apache Tomcat (e.g., security patches, bug fixes, etc.), we will use it.
 
-> NOTE: Undertow is another an open source project that is maintained by Red Hat and therefore Red Hat plans to
-add support for Undertow shortly.
+> NOTE: Undertow is another an open source project that is maintained by Red Hat and therefore Red Hat plans to add support for Undertow shortly.
 
 Because of the Red Hat BOM and access to the Red Hat maven repositories all we need to do to enable the supported Apache Tomcat as servlet container is to add the following dependency to your _pom.xml_. Add these lines at the `<!-- TODO: Add web (tomcat) dependency here -->` marker:
 
@@ -107,8 +95,7 @@ We will also make use of Java Persistance API (JPA) so we need to add the follow
         </dependency>
 ~~~
 
-We will go ahead and add a bunch of other dependencies while we have the pom.xml open. These will be explained later. Add these at the
-`<!-- TODO: Add actuator, feign and hystrix dependency here -->` marker:
+We will go ahead and add a bunch of other dependencies while we have the pom.xml open. These will be explained later. Add these at the `<!-- TODO: Add actuator, feign and hystrix dependency here -->` marker:
 
 ~~~xml
         <dependency>
@@ -129,7 +116,7 @@ We will go ahead and add a bunch of other dependencies while we have the pom.xml
         </dependency>
 ~~~
 
-Use the command palette and select 'Build' to build and package the app using Maven to make sure the changed code still compiles:
+Use the command palette and select 'clean build catalog' to build and package the app using Maven to make sure the changed code still compiles:
 
 ![catalog_build]({% image_path catalog-build.png %})
 
@@ -139,15 +126,19 @@ Now you've seen how to get started with Spring Boot development on Red Hat Runti
 
 In next step of this lab, we will add the logic to be able to read a data from the database.
 
-####4. Create Domain Objects
+#### 4. Create Domain Objects
 
 ---
 
 Before we create the database repository class to access the data it's good practice to create test cases for the different methods that we will use.
 
-Right-click on the `src/test/java/com.redhat.coolstore.service` package, and select _New > Java Class_. Type `ProductRepositoryTest` into the dialog box and press **OK** which will create an empty class file.
+Right-click on the `src/test/java/com/redhat/coolstore/service` folder, and select _New File_. 
 
-![che]({% image_path che-right-click.png %}){:width="700px"}
+![che]({% image_path catalog-new-file-product-repository-test.png %}){:width="500px"}
+
+Enter `ProductRepositoryTest.java` into the dialog box and press **OK** which will create an empty class file.
+
+![che]({% image_path catalog-product-repository-test-file-name.png %}){:width="600px"}
 
 Replace the content of this new file with the below code:
 
@@ -218,7 +209,7 @@ Again, add these at the `<!-- TODO: Insert test_readAll here -->` marker:
     }
 ~~~
 
-####5. Implement the database repository
+#### 5. Implement the database repository
 
 ---
 
@@ -301,13 +292,26 @@ spring.datasource.driver-class-name=org.h2.Driver
 
 The Spring Data framework will automatically see if there is a `schema.sql` in the class path and run that when initializing.
 
-Now we are ready to run the test to verify that everything works. Right-click on the `src/test/java/com/redhat/coolstore/service` package and select _Run Test > Run JUnit Test_.
+Now we are ready to run the test to verify that everything works. Just run `build catalog` again and pay attention to the last part.
 
-![catalog-test-run]({% image_path catalog-test-run.png %}){:width="600px"}
+~~~shell
+...
+2020-02-05 18:11:40.334  INFO 1780 --- [       Thread-5] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
 
-The test should be successful and you should see green color _test_realAll_, _test_realOne_ in Default Suite window.
+Results :
 
-![catalog-test-success]({% image_path catalog-test-success.png %}){:width="600px"}
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ catalog ---
+[INFO] Building jar: /projects/cloud-native-workshop-v2m1-labs/catalog/target/catalog-1.0.0-SNAPSHOT.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  50.473 s
+[INFO] Finished at: 2020-02-05T18:11:41Z
+[INFO] ------------------------------------------------------------------------
+~~~
 
 You have now successfully executed the second step in this lab.
 
@@ -315,7 +319,7 @@ Now you've seen how to use Spring Data to collect data from the database and how
 
 In next step of this lab, we will add the logic to expose the database content from REST endpoints using JSON format.
 
-####6. Create Catalog Service
+#### 6. Create Catalog Service
 
 ---
 
@@ -485,23 +489,16 @@ public class CatalogEndpoint {
 
 The Spring MVC Framework default uses Jackson to serialize or map Java objects to JSON and vice versa. Because Jackson extends upon JAX-B and does can automatically parse simple Java structures and parse them into JSON and vice verse and since our `Product.java` is very simple and only contains basic attributes we do not need to tell Jackson how to parse between Product and JSON.
 
-Now you can run the _CatalogEndpointTest_ and verify that it works via **Run Junit Test**. Right-click on the `CatalogEndpointTest` and select _Run Test > Run JUnit Test_.
+Run again `build catalog` and pay attention to the tests results. You can also run this last unit test as follows:
 
-![catalog-endpoint-test-run]({% image_path catalog-endpoint-test-run.png %}){:width="700px"}
-
-The test should be successful and you should see green color _test_retriving_one_proudct_, _check_that_endpoint_returns_a_correct_list<> in Default Suite window.
-
-![catalog-endpoint-test-success]({% image_path catalog-endpoint-test-success.png %})
-
-You can also run the following command via `CodeReady Workspaces Terminal` to verify the test cases.
-
-`cd /projects/cloud-native-workshop-v2m1-labs/catalog/`
-
-`mvn verify -Dtest=CatalogEndpointTest`
+~~~shell
+cd /projects/cloud-native-workshop-v2m1-labs/catalog/
+mvn verify -Dtest=CatalogEndpointTest
+~~~
 
 Since we now have endpoints that returns the catalog we can also start the service and load the default page again, which should now return the products.
 
-Start the application via CodeReady Workspaces **RUN** Menu:
+Start the application via CodeReady Workspaces `Terminal->Run Task` and select `run spring boot catalog`:
 
 ![catalog-spring-run]({% image_path catalog-spring-run.png %})
 
@@ -530,7 +527,7 @@ In the next step, we will also call another service to enrich the endpoint respo
 
 > NOTE: Make sure to stop the service by closing `run spring-boot` tab window in CodeReady Workspace.
 
-####7. Get inventory data
+#### 7. Get inventory data
 
 ---
 
@@ -544,7 +541,7 @@ private InventoryEntity inventory;
 
 When redesigning our application to Microservices using domain driven design we have identified that Inventory and Product Catalog are two separate domains. However our current UI expects to retrieve data from both the Catalog Service and Inventory service in a singe request.
 
-####Service interaction
+#### Service interaction
 
 Our problem is that the user interface requires data from two services when calling the REST service on `/services/products`. There are multiple ways to solve this like:
 
@@ -556,7 +553,7 @@ Our problem is that the user interface requires data from two services when call
 
 There are no right or wrong answers here, but since this is a workshop on application modernization using Red Hat Runtimes we will not choose option I or II here. Instead we are going to use option III and extend our Catalog to call the Inventory service.
 
-####8. Extending the test
+#### 8. Extending the test
 
 ---
 
@@ -572,9 +569,11 @@ And add it to the second test as well at the remaining _//TODO: Add check for Qu
 
 `                .returns(9999,Product::getQuantity)`
 
-Now you can run the _CatalogEndpointTest_ and verify that it **fails** via _Run Junit Test_:
+Now you can run the _CatalogEndpointTest_ and verify that it **fails**.
 
-![catalog-endpoint-test-run]({% image_path catalog-endpoint-test-run.png %}){:width="700px"}
+~~~shell
+mvn verify -Dtest=CatalogEndpointTest
+~~~
 
 The test _should fail_ and you should see red color **test_retriving_one_proudct**, **check_that_endpoint_returns_a_correct_list** in Default Suite window.
 
@@ -604,7 +603,7 @@ This _ClassRule_ means that if our tests are trying to call our inventory url, H
 
 We will soon use the `// commented-out` lines, so keep them in there!
 
-####9. Implementing the Inventory Client
+#### 9. Implementing the Inventory Client
 
  ---
 
@@ -693,9 +692,11 @@ Also in the _readAll()_ method replace the comment `//TODO: Update the quantity 
 
 > NOTE: Class `JSONArray` is an ordered sequence of values. Its external text form is a string wrapped in square brackets with commas separating the values. The internal form is an object having get and opt methods for accessing the values by index, and element methods for adding or replacing values.
 
-Now you can run the _CatalogEndpointTest_ and verify that it works via **Run Junit Test**:
+Now you can run the _CatalogEndpointTest_ and verify that it **works**.
 
-![catalog-endpoint-test-run]({% image_path catalog-endpoint-test-run.png %}){:width="700px"}
+~~~shell
+mvn verify -Dtest=CatalogEndpointTest
+~~~
 
 The test should be successful and you should see green color **test_retriving_one_proudct**, **check_that_endpoint_returns_a_correct_list** in Default Suite window.
 
@@ -708,7 +709,7 @@ You now have the framework for retrieving products from the product catalog and 
 an external service. But what if that external inventory service does not respond? That's the topic for the next step.
 
 
-####10. Create a fallback for inventory
+#### 10. Create a fallback for inventory
 
 ---
 
@@ -740,7 +741,7 @@ After creating the fallback factory all we have todo is to tell Feign to use tha
 @FeignClient(name="inventory",fallbackFactory = InventoryClient.InventoryClientFallbackFactory.class)
 ~~~
 
-####11. Test the Fallback
+#### 11. Test the Fallback
 
 ---
 
@@ -776,9 +777,11 @@ public static HoverflyRule hoverflyRule = HoverflyRule.inSimulationMode(dsl(
 
 Notice that the Hoverfly Rule will now return `serverError` for all requests to inventory.
 
-Now you can run the _CatalogEndpointTest_ and verify that it **fails** via **Run Junit Test**:
+Now you can run the _CatalogEndpointTest_ and verify that it **fails**.
 
-![catalog-endpoint-test-run]({% image_path catalog-endpoint-test-run.png %}){:width="700px"}
+~~~shell
+mvn verify -Dtest=CatalogEndpointTest
+~~~
 
 The test _should fail_ and you _should see red color `test_retriving_one_proudct_, _check_that_endpoint_returns_a_correct_list` in Default Suite window.
 
@@ -802,7 +805,7 @@ public static HoverflyRule hoverflyRule = HoverflyRule.inSimulationMode(dsl(
 
 Make sure the test works again by re-running the `CatalogEndpointTest` JUnit Test.
 
-####12. Slow running services
+#### 12. Slow running services
 
 ---
 
@@ -818,9 +821,11 @@ hystrix.command.inventory.execution.isolation.thread.timeoutInMilliseconds=500
 
 Open _src/test/java/com/redhat/coolstore/service/CatalogEndpointTest.java_ and un-comment the **.andDelay(2500, TimeUnit.MILLISECONDS).forMethod("GET")**
 
-Now you can run the _CatalogEndpointTest_ and verify that it **fails** via **Run Junit Test**:
+Now you can run the _CatalogEndpointTest_ and verify that it **fails**.
 
-![catalog-endpoint-test-run]({% image_path catalog-endpoint-test-run.png %}){:width="700px"}
+~~~shell
+mvn verify -Dtest=CatalogEndpointTest
+~~~
 
 The test _should fail_ and you should see red color `test_retriving_one_proudct`, `check_that_endpoint_returns_a_correct_list` in Default Suite window.
 
@@ -833,13 +838,13 @@ You have now successfully executed the fourth step in this lab.
 In this step you've learned how to add Fallback logic to your class and how to add timeout to service calls.
 In the next step we now test our service locally before we deploy it to OpenShift.
 
-####13. Test Locally
+#### 13. Test Locally
 
 ---
 
 As you have seen in previous steps, using the Spring Boot maven plugin (predefined in _pom.xml_), you can conveniently run the application locally and test the endpoint.
 
-Start the application via CodeReady Workspaces **RUN** Menu:
+Start the application via CodeReady Workspaces **run spring boot catalog** Menu:
 
 ![catalog-spring-run]({% image_path catalog-spring-run.png %})
 
@@ -865,29 +870,27 @@ API on top of the product catalog database. You have also learned how to deal wi
 In next step of this lab we will deploy our application to OpenShift Container Platform and then start
 adding additional features to take care of various aspects of cloud native microservice development.
 
-####14. Create the OpenShift project
+#### 14. Create the OpenShift project
 
 ---
 
-We have already deployed our coolstore monolith and inventory to OpenShift. In this step we will deploy our new Catalog microservice for our CoolStore application,
-so let's create a separate project to house it and keep it separate from our monolith and our other microservices.
+We have already deployed our coolstore monolith and inventory to OpenShift. In this step we will deploy our new Catalog microservice for our CoolStore application, so let's create a separate project to house it and keep it separate from our monolith and our other microservices.
 
-Click on the name of the **userXX-catalog** project:
+Open a terminal and create **userXX-catalog** project:
 
-![create_new]({% image_path create_new_catalog.png %})
-
-This will take you to the project overview. There's nothing there yet, but that's about to change.
+~~~shell
+oc new-project userXX-catalog
+~~~
 
 Next, we'll deploy your new microservice to OpenShift.
 
-####15. Deploy to OpenShift
+#### 15. Deploy to OpenShift
 
 ---
 
 Now that you've logged into OpenShift, let's deploy our new catalog microservice:
 
-Our production catalog microservice will use an external database (PostgreSQL) to house inventory data.
-First, deploy a new instance of PostgreSQL by executing via CodeReady Workspaces Terminal:
+Our production catalog microservice will use an external database (PostgreSQL) to house inventory data. First, deploy a new instance of PostgreSQL by executing via CodeReady Workspaces Terminal:
 
 `oc project userXX-catalog`
 
@@ -907,7 +910,7 @@ You can also check if the deployment is complete via CodeReady Workspaces Termin
 
 `oc rollout status -w dc/catalog-database`
 
-####16. Update configuration
+#### 16. Update configuration
 
 ---
 
@@ -947,7 +950,7 @@ spring.datasource.initialization-mode=always
 
 ![catalog_posgresql]({% image_path catalog_changed_properties.png %})
 
-####17. Build and Deploy
+#### 17. Build and Deploy
 
 ---
 
@@ -1001,7 +1004,7 @@ The expected result data is here:
 So now **Catalog** service is deployed to OpenShift. You can also see it in the Project Status in the OpenShift Console
 with running in 1 pod, along with the Postgres database pod.
 
-####18. Access the application running on OpenShift
+#### 18. Access the application running on OpenShift
 
 ---
 
@@ -1021,7 +1024,7 @@ The UI will refresh the catalog table every 2 seconds, as before.
 
 `Congratulations!` You have deployed the Catalog service as a microservice which in turn calls into the Inventory service to retrieve inventory data.
 
-####19. Strangling the monolith
+#### 19. Strangling the monolith
 
 ---
 
@@ -1058,9 +1061,9 @@ public class CORSProvider implements Feature {
 }
 ~~~
 
-Repackage the **inventory** application via clicking on **Package for OpenShift** in Commands Palette:
+Repackage the inventory application via clicking on **package quarkus for openshift** in Commands Palette:
 
-![codeready-workspace-maven]({% image_path quarkus-dev-run-packageforOcp.png %})
+![codeready-workspace-maven]({% image_path quarkus-dev-run-package-for-openshift.png %})
 
 Restart and watch the build, which will take about a minute to complete. Replace your username with **userXX**:
 

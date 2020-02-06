@@ -14,21 +14,43 @@ To get started, access the Che instance and log in using the username and passwo
 
 **Copy / Paste / Modify this url:** *{{ ECLIPSE_CHE_URL }}/f?url={{GIT_URL}}/userXX/cloud-native-workshop-v2m1-labs/raw/master/devfile.yaml*
 
-![cdw]({% image_path che-login.png %})
+Log in using your user/password:
+
+* Username: {{ CHE_USER_NAME }}
+* Password: {{ CHE_USER_PASSWORD }}
+
+
+![cdw]({% image_path che-login-sso.png %})
+
+The first time you log in you have to provide some additional information:
+
+* Username: userXX
+* Email: userXX@ocp.com
+* First name: User
+* Last name: U1
+
+![cdw]({% image_path che-update-information.png %})
 
 Once you log in, you'll be placed on your own workspace with all the tools you need to finish the lab.
 
-To gain extra screen space, click on the yellow arrow to hide the left menu (you won't need it):
-
-![cdw]({% image_path che-realestate.png %})
+![cdw]({% image_path che-land-page.png %})
 
 Users of Eclipse, IntelliJ IDEA or Visual Studio Code will see a familiar layout: a project/file browser on the left, a code editor on the right, and a terminal at the bottom. You'll use all of these during the course of this workshop, so keep this browser tab open throughout. **If things get weird, you can simply reload the browser tab to refresh the view.**
 
 
-
 > `NOTE`: the Terminal window in CodeReady Workspaces. For the rest of these labs, anytime you need to run a command in a terminal, you can use the CodeReady Workspaces Terminal window.
 
-![codeready-workspace-terminal]({% image_path codeready-workspace-terminal.png %})
+Open `Terminal->Open Terminal...`
+
+![codeready-workspace-terminal]({% image_path che-terminal-open-1.png %})
+
+Select `maven` (there can be several containers running for any given workspace, you have to select the one you want to connect to).
+
+![codeready-workspace-terminal]({% image_path che-terminal-open-2.png %})
+
+Finally you can star typing commands in you terminal.
+
+![codeready-workspace-terminal]({% image_path che-terminal-open-3.png %})
 
 #### 2. Review the issue related to `ApplicationLifecycleListener`
 
@@ -100,29 +122,34 @@ public class StartupListener {
 
 ---
 
-Go to `Commands Palette` and dobule-click on `build` in CodeReady Workspaces:
+Go to `Terminal->Run Task`
 
-![rhamt_project_issues]({% image_path codeready-workspace-build.png %})
+![rhamt_project_issues]({% image_path che-run-task.png %})
 
-If it builds successfully (you will see `BUILD SUCCESS`), then let's move on to the next issue! If it does not compile,
-verify you made all the changes correctly and try the build again.
+Choose `build monolith`.
 
-![rhamt_project_issues]({% image_path codeready-workspace-build-result.png %})
+![rhamt_project_issues]({% image_path che-run-build-monolith-1.png %})
+
+Select `Never scan the task output`.
+
+![rhamt_project_issues]({% image_path che-run-build-monolith-2.png %})
+
+If it builds successfully (you will see `BUILD SUCCESS`), then let's move on to the next issue! If it does not compile the first time try the build again.
+
+![rhamt_project_issues]({% image_path che-run-build-monolith-3.png %})
 
 In the next step, we will migrate some Weblogic-specific code in the app to use standard Java EE interfaces.
 
-Some of our application makes use of Weblogic-specific logging methods, which offer features related to logging of
-internationalized content, and client-server logging.
+Some of our application makes use of Weblogic-specific logging methods, which offer features related to logging of internationalized content, and client-server logging.
 
-In this case we are using Weblogic's `NonCatalogLogger` which is a simplified logging framework that doesn't use
-localized message catalogs (hence the term _NonCatalog_).
+In this case we are using Weblogic's `NonCatalogLogger` which is a simplified logging framework that doesn't use localized message catalogs (hence the term _NonCatalog_).
 
 The WebLogic `NonCatalogLogger` is not supported on JBoss EAP (or any other Java EE platform), and should be migrated to a supported logging framework, such as the JDK Logger or JBoss Logging.
 
 We will use the standard Java Logging framework, a much more portable framework. The framework also
 [supports internationalization](https://docs.oracle.com/javase/8/docs/technotes/guides/logging/overview.html#a1.17){:target="_blank"} if needed.
 
-####5. Make the changes
+#### 5. Make the changes
 
 ---
 
@@ -185,51 +212,36 @@ public class OrderServiceMDB implements MessageListener {
 
 That one was pretty easy.
 
-####6. Test the build
+#### 6. Test the build
 
 ---
 
-Build and package the app using Maven to make sure you code still compiles via CodeReady Workspaces `BUILD` window:
+Build and package the app using Maven to make sure you code still compiles via CodeReady Workspaces `build monolith` window. As we did before `Terminal->Run Task`.
 
-![rhamt_project_issues]({% image_path codeready-workspace-build.png %})
+![rhamt_project_issues]({% image_path che-run-build-monolith-4.png %})
 
-If builds successfully (you will see `BUILD SUCCESS`), then let's move on to the next issue! If it does not compile,
-verify you made all the changes correctly and try the build again.
+If builds successfully (you will see `BUILD SUCCESS`), then let's move on to the next issue! If it does not compile, verify you made all the changes correctly and try the build again.
 
-In this final step we will again migrate some Weblogic-specific code in the app to use standard Java EE interfaces,
-and one JBoss-specific interface.
+In this final step we will again migrate some Weblogic-specific code in the app to use standard Java EE interfaces, and one JBoss-specific interface.
 
 Our application uses [JMS](https://en.wikipedia.org/wiki/Java_Message_Service){:target="_blank"}{:target="_blank"} to communicate. Each time an order is placed in the application, a JMS message is sent to
-a JMS Topic, which is then consumed by listeners (subscribers) to that topic to process the order using [Message-driven beans](https://docs.oracle.com/javaee/6/tutorial/doc/gipko.html){:target="_blank"}{:target="_blank"}, a form
-of Enterprise JavaBeans (EJBs) that allow Java EE applications to process messages asynchronously.
+a JMS Topic, which is then consumed by listeners (subscribers) to that topic to process the order using [Message-driven beans](https://docs.oracle.com/javaee/6/tutorial/doc/gipko.html){:target="_blank"}{:target="_blank"}, a form of Enterprise JavaBeans (EJBs) that allow Java EE applications to process messages asynchronously.
 
-In this case, `InventoryNotificationMDB` is subscribed to and listening for messages from `ShoppingCartService`. When
-an order comes through the `ShoppingCartService`, a message is placed on the JMS Topic. At that point, the `InventoryNotificationMDB`
-receives a message and if the inventory service is below a pre-defined threshold, sends a message to the log indicating that
-the supplier of the product needs to be notified.
+In this case, `InventoryNotificationMDB` is subscribed to and listening for messages from `ShoppingCartService`. When an order comes through the `ShoppingCartService`, a message is placed on the JMS Topic. At that point, the `InventoryNotificationMDB` receives a message and if the inventory service is below a pre-defined threshold, sends a message to the log indicating that the supplier of the product needs to be notified.
 
-Unfortunately this MDB was written a while ago and makes use of weblogic-proprietary interfaces to configure and operate the
-MDB. RHAMT has flagged this and reported it using a number of issues.
+Unfortunately this MDB was written a while ago and makes use of weblogic-proprietary interfaces to configure and operate the MDB. RHAMT has flagged this and reported it using a number of issues.
 
-JBoss EAP provides an even more efficient and declarative way
-to configure and manage the lifecycle of MDBs. In this case, we can use annotations to provide the necessary initialization
-and configuration logic and settings. We will use the
-`@MessageDriven` and `@ActivationConfigProperty` annotations, along with the `MessageListener` interfaces to provide the
+JBoss EAP provides an even more efficient and declarative way to configure and manage the lifecycle of MDBs. In this case, we can use annotations to provide the necessary initialization and configuration logic and settings. We will use the `@MessageDriven` and `@ActivationConfigProperty` annotations, along with the `MessageListener` interfaces to provide the
 same functionality as from Weblogic.
 
-Much of Weblogic's interfaces for EJB components like MDBs reside in Weblogic descriptor XML files. Open
-``src/main/webapp/WEB-INF/weblogic-ejb-jar.xml`` to see one of these descriptors. There are many different configuration
-possibilities for EJBs and MDBs in this file, but luckily our application only uses one of them, namely it configures
-`<trans-timeout-seconds>` to 30, which means that if a given transaction within an MDB operation takes too
-long to complete (over 30 seconds), then the transaction is rolled back and exceptions are thrown. This interface is
+Much of Weblogic's interfaces for EJB components like MDBs reside in Weblogic descriptor XML files. Open ``src/main/webapp/WEB-INF/weblogic-ejb-jar.xml`` to see one of these descriptors. There are many different configuration possibilities for EJBs and MDBs in this file, but luckily our application only uses one of them, namely it configures
+`<trans-timeout-seconds>` to 30, which means that if a given transaction within an MDB operation takes too long to complete (over 30 seconds), then the transaction is rolled back and exceptions are thrown. This interface is
 Weblogic-specific so we'll need to find an equivalent in JBoss.
 
 > You should be aware that this type of migration is more involved than the previous steps, and in real world applications
-it will rarely be as simple as changing one line at a time for a migration. Consult the [RHAMT documentation](https://access.redhat.com/documentation/en/red-hat-application-migration-toolkit){:target="_blank"} for more detail on Red Hat's
-Application Migration strategies or contact your local Red Hat representative to learn more about how Red Hat can help you
-on your migration path.
+it will rarely be as simple as changing one line at a time for a migration. Consult the [RHAMT documentation](https://access.redhat.com/documentation/en/red-hat-application-migration-toolkit){:target="_blank"} for more detail on Red Hat's Application Migration strategies or contact your local Red Hat representative to learn more about how Red Hat can help you on your migration path.
 
-####7. Review the issues
+#### 7. Review the issues
 
 ---
 
@@ -243,22 +255,22 @@ From the RHAMT Issues report, we will fix the remaining issues:
 All of the above interfaces have equivalents in JBoss, however they are greatly simplified and overkill for our application which uses
 JBoss EAP's internal message queue implementation provided by [Apache ActiveMQ Artemis](https://activemq.apache.org/artemis/){:target="_blank"}.
 
-####8. Remove the weblogic EJB Descriptors
+#### 8. Remove the weblogic EJB Descriptors
 
 ---
 
 The first step is to remove the unneeded `weblogic-ejb-jar.xml` file. This file is proprietary to Weblogic and not recognized or processed by JBoss
 EAP. Delete the file on Eclipse Navigator:
 
-![codeready-workspace-convert]({% image_path codeready-workspace-delete-jar.png %}){:width="500px"}
+![crw]({% image_path che-delete-weblogic-ejb-jar.png %}){:width="500px"}
 
 While we're at it, let's remove the `stub weblogic implementation classes` added as part of the scenario.
 
 Right-click on the `weblogic` folder and select **Delete** to delete the folder:
 
-![codeready-workspace-convert]({% image_path codeready-workspace-delete-weblogic.png %}){:width="500px"}
+![crw]({% image_path che-delete-weblogic-folder.png %}){:width="500px"}
 
-####9. Fix the code
+#### 9. Fix the code
 
 ---
 
@@ -320,58 +332,72 @@ public class InventoryNotificationMDB implements MessageListener {
 }
 ~~~
 
-Remember the `<trans-timeout-seconds>` setting from the `weblogic-ejb-jar.xml` file? This is now set as an
-`@ActivationConfigProperty` in the new code. There are pros and cons to using annotations vs. XML descriptors and care should be
-taken to consider the needs of the application.
+Remember the `<trans-timeout-seconds>` setting from the `weblogic-ejb-jar.xml` file? This is now set as an `@ActivationConfigProperty` in the new code. There are pros and cons to using annotations vs. XML descriptors and care should be taken to consider the needs of the application.
 
 Your MDB should now be properly migrated to JBoss EAP.
 
-####10. Test the build
+### 10. Test the build
 
 ---
 
 Build and package the app using Maven to make sure you code still compiles via CodeReady Workspaces `BUILD` window:
 
-![rhamt_project_issues]({% image_path codeready-workspace-build.png %})
+![rhamt_project_issues]({% image_path che-run-build-monolith-5.png %})
 
 If builds successfully (you will see `BUILD SUCCESS`), then let's move on to the next issue! If it does not compile,
 verify you made all the changes correctly and try the build again.
 
-####11. Re-run the RHAMT report
+#### 11. Re-run the RHAMT report
 
 ---
 
 In this step we will re-run the RHAMT report to verify our migration was successful.
 
+The first step is to download the latest and hopefully fixed WAR file. So go to `monolith/target` and download `ROOT.war`.
+
+![rhamt_rerun_analysis_report]({% image_path rhamt_rerun_analysis_report-1.png %}){:width="400px"}
+
+In the [RHAMT Console]({{ RHAMT_URL }}){:target="_blank"}, navigate to `Applications` on the left menu and click on `Add`.
+
+![rhamt_rerun_analysis_report]({% image_path rhamt_rerun_analysis_report-2.png %})
+
+Now, drag and drop `ROOT.war` onto the `Drop files here` area or navigate to it. You'll see the file upload.
+
+![rhamt_rerun_analysis_report]({% image_path rhamt_rerun_analysis_report-3.png %})
+
+Once the upload has finished. Click on `Done`.
+
+![rhamt_rerun_analysis_report]({% image_path rhamt_rerun_analysis_report-4.png %})
+
+Be sure to delete the old `monolith.war` to avoid analyzing it again. Select `com` and `weblogic` packages and click on `Save & Run`.
+
+![rhamt_rerun_analysis_report]({% image_path rhamt_rerun_analysis_report-5.png %})
+
+> **NOTE:** Depending on how many other students are running reports, your analysis might be _queued_ for several minutes. If it is taking too long, feel free to skip the next section and proceed to step **13** and return back to the analysis later to confirm that you eliminated all the issues.
+
+> **NOTE:** If you couldn't finish the lab and still want to analyze a proper, fixed war, instead of using `ROOT.war` just follow the next steps.
+
 In the [RHAMT Console]({{ RHAMT_URL }}){:target="_blank"}, navigate to `Applications` on the left menu and click on `Add`. Enter the path to the fixed project at `/opt/solution` and click **Upload** to add the project:
 
 ![rhamt_rerun_analysis_report]({% image_path rhamt_rerun_analysis_report_solution.png %})
 
-Be sure to delete the old `monolith.war` to avoid analyzing it again:
-
-![rhamt_rerun_analysis_report]({% image_path rhamt_rerun_analysis_report_solution_del.png %})
-
-and then click **Save and Run** to analyze the project:
-
-![rhamt_rerun_analysis_report]({% image_path rhamt_rerun_analysis_report.png %})
-
-Depending on how many other students are running reports, your analysis might be _queued_ for several minutes. If it is taking too long, feel free to skip the next section and proceed to step **13** and return back to the analysis later to confirm that you eliminated all the issues.
-
-####12. View the results
+#### 12. View the results
 
 ---
 
-Click on the lastet result to go to the report web page and verify that it now reports 0 Story Points:
+Click on the latest (#2 or #3) result to go to the report web page.
 
-You have successfully migrated
-this app to JBoss EAP, congratulations!
+![rhamt_rerun_analysis_report]({% image_path rhamt_rerun_analysis_report-6.png %})
 
-![rhamt_project_issues_story]({% image_path rhamt_project_issues_story.png %})
+Verify that it now reports 0 Story Points:
 
-Now that we've migrated the app, let's deploy it and test it out and start to explore some of the features that JBoss EAP
-plus Red Hat OpenShift bring to the table.
+![rhamt_rerun_analysis_report]({% image_path rhamt_result_landing_page_fixed.png %})
 
-####13. Add an OpenShift profile
+You have successfully migrated this app to JBoss EAP, congratulations!
+
+Now that we've migrated the app, let's deploy it and test it out and start to explore some of the features that JBoss EAP plus Red Hat OpenShift bring to the table.
+
+#### 13. Add an OpenShift profile
 
 ---
 
@@ -404,7 +430,7 @@ At the `<!-- TODO: Add OpenShift profile here -->` we are going to add a the fol
         </profile>
 ~~~
 
-####14. Create the OpenShift project
+#### 14. Create the OpenShift project
 
 ---
 
@@ -415,7 +441,7 @@ First, open a new brower with the [OpenShift web console]({{ CONSOLE_URL}}){:tar
 Login using:
 
 * Username: `userXX`
-* Password: `r3dh4t1!`
+* Password: `{{ CHE_USER_PASSWORD }}`
 
 > **NOTE**: Use of self-signed certificates
 >
@@ -460,7 +486,7 @@ Although your Eclipse Che workspace is running on the Kubernetes cluster, it's r
 Enter your username and password assigned to you:
 
 * Username: `userXX`
-* Password: `r3dh4t1!`
+* Password: `{{ CHE_USER_PASSWORD }}`
 
 You should see like:
 
@@ -469,15 +495,10 @@ Login successful.
 
 You have access to the following projects and can switch between them with 'oc project <projectname>':
 
-  * default
-    istio-system
-    user0-bookinfo
-    user0-catalog
-    user0-cloudnative-pipeline
-    user0-cloudnativeapps
-    user0-inventory
+  * userXX-che
+    userXX-coolstore-dev
 
-Using project "default".
+Using project "user1-che".
 Welcome! See 'oc help' to get started.
 ~~~
 

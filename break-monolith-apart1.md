@@ -1,18 +1,13 @@
 ## Lab3 - Breaking the monolith apart - I
 
-In the previous labs you learned how to take an existing monolithic Java EE application to the cloud
-with JBoss EAP and OpenShift, and you got a glimpse into the power of OpenShift for existing applications.
+In the previous labs you learned how to take an existing monolithic Java EE application to the cloud with JBoss EAP and OpenShift, and you got a glimpse into the power of OpenShift for existing applications.
 
-You will now begin the process of modernizing the application by breaking the application into multiple
-microservices using different technologies, with the eventual goal of re-architecting the entire application as a set of
-distributed microservices. Later on we'll explore how you can better manage and monitor the application after
-it is re-architected.
+You will now begin the process of modernizing the application by breaking the application into multiple microservices using different technologies, with the eventual goal of re-architecting the entire application as a set of distributed microservices. Later on we'll explore how you can better manage and monitor the application after it is re-architected.
 
 In this lab you will learn more about `Supersonic Subatomic Java` [Quarkus](https://quarkus.io/){:target="_blank"}, which is designed to be container and developer friendly.
 
 Quarkus is a _Kubernetes Native_ Java stack, crafted from the best of breed Java libraries and standards.
-Amazingly fast boot time, incredibly low RSS memory (not just heap size!) offering near instant scale up and high density memory utilization
-in container orchestration platforms like Kubernetes. Quarkus uses a technique called compile time boot. [Learn more](https://quarkus.io/vision/container-first){:target="_blank"}.
+Amazingly fast boot time, incredibly low RSS memory (not just heap size!) offering near instant scale up and high density memory utilization in container orchestration platforms like Kubernetes. Quarkus uses a technique called compile time boot. [Learn more](https://quarkus.io/vision/container-first){:target="_blank"}.
 
 This will be one of the runtimes included in [Red Hat Runtimes](https://www.redhat.com/en/products/runtimes){:target="_blank"}.
 
@@ -21,9 +16,7 @@ This will be one of the runtimes included in [Red Hat Runtimes](https://www.redh
 
 ---
 
-You will implement one component of the monolith as a Quarkus microservice and modify it to address
-microservice concerns, understand its structure, deploy it to OpenShift and exercise the interfaces between
-Quarkus apps, microservices, and OpenShift/Kubernetes.
+You will implement one component of the monolith as a Quarkus microservice and modify it to address microservice concerns, understand its structure, deploy it to OpenShift and exercise the interfaces between Quarkus apps, microservices, and OpenShift/Kubernetes.
 
 The goal is to deploy this new microservice alongside the existing monolith, and then later on we'll tie them together.
 But after this lab, you should end up with something like:
@@ -54,20 +47,19 @@ HTTP microservices, reactive applications, message-driven microservices and serv
 * **Best of Breed Frameworks & Standards** - CodeReady Workspaces Vert.x, Hibernate, RESTEasy, Apache Camel, CodeReady Workspaces MicroProfile, Netty, Kubernetes, OpenShift, Jaeger, Prometheus, Apacke Kafka, Infinispan, and more.
 
 
-####1. Setup an Inventory proejct
+#### 1. Setup an Inventory proejct
 
 ---
 
 In the project explorer, expand the **inventory**  project.
 
-![inventory_setup]({% image_path codeready-workspace-inventory-project.png %}){:width="500px"}
+![inventory_setup]({% image_path codeready-workspace-inventory-project-1.png %}){:width="500px"}
 
-####2. Examine the Maven project structure
+#### 2. Examine the Maven project structure
 
 ---
 
-The sample Quarkus project shows a minimal CRUD service exposing a couple of endpoints over REST,
-with a front-end based on Angular so you can play with it from your browser.
+The sample Quarkus project shows a minimal CRUD service exposing a couple of endpoints over REST, with a front-end based on Angular so you can play with it from your browser.
 
 While the code is surprisingly simple, under the hood this is using:
 
@@ -84,7 +76,7 @@ Now let's write some code and create a domain model, service interface and a RES
 
 ![Inventory RESTful Service]({% image_path inventory-arch.png %}){:width="700px"}
 
-####3. Add Quarkus Extensions
+#### 3. Add Quarkus Extensions
 
 ---
 
@@ -102,7 +94,7 @@ And then for local H2 database:
 
 > NOTE: There are many [more extensions](https://quarkus.io/extensions/){:target="_blank"} for Quarkus for popular frameworks like [Vert.x](https://vertx.io/){:target="_blank"}, [Apache Camel](http://camel.apache.org/){:target="_blank"}, [Infinispan](http://infinispan.org/){:target="_blank"}, Spring DI compatibility (e.g. `@Autowired`), and more.
 
-####4. Create Inventory Entity
+#### 4. Create Inventory Entity
 
 ---
 
@@ -146,7 +138,7 @@ Users can just start using your entity Inventory by typing Inventory, and get co
 When an entity is annotated with `@Cacheable`, all its field values are cached except for collections and relations to other entities.
 This means the entity can be loaded quicker without querying the database for frequently-accessed, but rarely-changing data.
 
-####5. Define the RESTful endpoint of Inventory
+#### 5. Define the RESTful endpoint of Inventory
 
 ---
 
@@ -216,7 +208,7 @@ The above REST services defines two endpoints:
 
 * `/inventory/<itemId>` that is accessible via _HTTP GET_ at for example `/inventory/329199` with the last path parameter being the ID for which we want inventory status.
 
-####6. Add inventory data
+#### 6. Add inventory data
 
 ---
 
@@ -247,13 +239,17 @@ quarkus.hibernate-orm.database.generation=drop-and-create
 quarkus.hibernate-orm.log.sql=false
 ~~~
 
-####7. Run Quarkus Inventory application
+#### 7. Run Quarkus Inventory application
 
 ---
 
-Now we are ready to run the inventory application. Click on **Commands Palette** then select **Build and Run Locally** in Run menu:
+Now we are ready to run the inventory application. Click on **Commands Palette** then select **build and run quarkus locally** in Run menu:
 
-![codeready-workspace-maven]({% image_path quarkus-dev-run-paletter.png %})
+![codeready-workspace-maven]({% image_path quarkus-dev-run-task.png %})
+
+Again choose `Never scan task output`
+
+![codeready-workspace-maven]({% image_path quarkus-dev-run-task-never-scan-output.png %})
 
 > This simply runs `mvn compile quarkus:dev` for you
 
@@ -264,6 +260,19 @@ You should see a bunch of log output that ends with:
 2019-09-26 15:55:38,447 INFO  [io.quarkus] (main) Profile dev activated. Live Coding activated.
 2019-09-26 15:55:38,447 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, jdbc-h2, narayana-jta, resteasy, resteasy-jsonb]
 ~~~
+
+Additionally, becuase the process is listening in port 8080 (and also on 5005 for debugging) CodeReady Workspaces shows a couple of popups suggesting us to add a redirect to those ports. Accept popup for port `8080` and close the other one.
+
+![codeready-workspace-maven]({% image_path quarkus-dev-run-task-listening-8080.png %})
+
+After accepting redireting port `8080` another popup appears, this time asking if we want to open the link. Go ahead and accept it.
+
+![codeready-workspace-maven]({% image_path quarkus-dev-run-task-open-link-1.png %})
+
+Hopefully at this time you should be seeing a simple UI to test the inventory service.
+
+![codeready-workspace-maven]({% image_path quarkus-dev-run-task-open-link-2.png %})
+
 
 Open a **new** CodeReady Workspaces Terminal and invoke the RESTful endpoint using the following CURL commands. The output looks like here:
 
@@ -286,9 +295,9 @@ yo","quantity":230}]
 
 ##### Stop the application
 
-Stop Quarkus development mode by closing the _Build and Run Locally_ Terminal window.
+Stop Quarkus development mode by closing the _build and run quarkus locally_ terminal window.
 
-####8. Add Test Code and create a package
+#### 8. Add Test Code and create a package
 
 ---
 
@@ -386,19 +395,16 @@ easy it is to migrate existing monolithic Java EE application to microservices u
 In next steps of this lab we will deploy our application to OpenShift Container Platform and then start
 adding additional features to take care of various aspects of cloud native microservice development.
 
-####9. Create OpenShift Project
+#### 9. Create OpenShift Project
 
 ---
 
-We have already deployed our coolstore monolith to OpenShift, but now we are working on re-architecting it to be
-microservices-based.
+We have already deployed our coolstore monolith to OpenShift, but now we are working on re-architecting it to be microservices-based.
 
 In this step, we will deploy our new Inventory microservice for our CoolStore application,
-so create a separate project to house it and keep it separate from our monolith and our other microservices we will
-create later on.
+so create a separate project to house it and keep it separate from our monolith and our other microservices we will create later on.
 
-Before going to OpenShift console, we will repackage the Quarkus application for adding a PostgreSQL extension
-because our Inventory service will connect to PostgeSQL database in production on OpenShift.
+Before going to OpenShift console, we will repackage the Quarkus application for adding a PostgreSQL extension because our Inventory service will connect to PostgeSQL database in production on OpenShift.
 
 Add a _quarkus-jdbc-postgresql_ extension via CodeReady Workspaces Terminal:
 
@@ -417,9 +423,7 @@ By default Quarkus has three profiles, although it is possible to use as many as
 
  * **prod** - The default profile when not running in development or test mode
 
-There are two ways to set a custom profile, either via the `quarkus.profile` system property or the `QUARKUS_PROFILE` environment variable.
-If both are set the system property takes precedence. Note that it is not necessary to define the names of these profiles anywhere,
-all that is necessary is to create a config property with the profile name, and then set the current profile to that name.
+There are two ways to set a custom profile, either via the `quarkus.profile` system property or the `QUARKUS_PROFILE` environment variable. If both are set the system property takes precedence. Note that it is not necessary to define the names of these profiles anywhere, all that is necessary is to create a config property with the profile name, and then set the current profile to that name.
 
 Let's add the following variables in _src/main/resources/application.properties_:
 
@@ -435,9 +439,19 @@ Let's add the following variables in _src/main/resources/application.properties_
 %prod.quarkus.hibernate-orm.log.sql=true
 ~~~
 
-Repackage the inventory application via clicking on **Package for OpenShift** in Commands Palette:
+Repackage the inventory application via clicking on **package quarkus for openshift** in Commands Palette:
 
-![codeready-workspace-maven]({% image_path quarkus-dev-run-packageforOcp.png %})
+![codeready-workspace-maven]({% image_path quarkus-dev-run-package-for-openshift.png %})
+
+Choose `Never scan task output`
+
+![codeready-workspace-maven]({% image_path quarkus-dev-run-package-for-openshift-never-scan.png %})
+
+Open a terminal and create **userXX-inventory** project:
+
+~~~shell
+oc new-project userXX-inventory
+~~~
 
 In OpenShift, click on the name of the **userXX-inventory** project:
 
@@ -445,14 +459,13 @@ In OpenShift, click on the name of the **userXX-inventory** project:
 
 This will take you to the project overview. There's nothing there yet, but that's about to change.
 
-####10. Deploy to OpenShift
+#### 10. Deploy to OpenShift
 
 ---
 
 Let's deploy our new inventory microservice to OpenShift!
 
-Our production inventory microservice will use an external database (PostgreSQL) to house inventory data.
-First, deploy a new instance of PostgreSQL by executing the following commands via CodeReady Workspaces Terminal:
+Our production inventory microservice will use an external database (PostgreSQL) to house inventory data. First, deploy a new instance of PostgreSQL by executing the following commands via CodeReady Workspaces Terminal:
 
 `oc project userXX-inventory`
 
@@ -472,12 +485,15 @@ This will deploy the database to our new project.
 
 ![inventory_db_deployments]({% image_path inventory-database-deployment.png %})
 
-####11. Build and Deploy
+#### 11. Build and Deploy
 
 ---
 
-Red Hat OpenShift Application Runtimes includes a powerful maven plugin that can take an
-existing Quarkus application and generate the necessary Kubernetes configuration.
+Red Hat OpenShift Application Runtimes includes a powerful maven plugin that can take an existing Quarkus application and generate the necessary Kubernetes configuration.
+
+> **REMEMBER**
+> * To login: `oc login https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT --insecure-skip-tls-verify=true`
+> * To set the default project: `oc project userXX-inventory`
 
 Build and deploy the project using the following command, which will use the maven plugin to deploy via CodeReady Workspaces Terminal:
 
@@ -516,7 +532,7 @@ And now we can access using curl once again to find all inventories:
 So now `Inventory` service is deployed to OpenShift. You can also see it in the Project Status in the OpenShift Console
 with its single replica running in 1 pod, along with the Postgres database pod.
 
-####12. Access the application running on OpenShift
+#### 12. Access the application running on OpenShift
 
 ---
 
@@ -552,13 +568,11 @@ Once an application is running, there are no guarantees that it will continue to
 
 In our case we will implement the health check logic in a REST endpoint and let Quarkus publish that logic on the _/health_ endpoint for use with OpenShift.
 
-####13. Add Health Check Extension
+#### 13. Add Health Check Extension
 
 ---
 
-We will add a Qurakus extension to the Inventory application for using **smallrye-health** and we'll use the Quarkus Maven Plugin.
-Copy the following commands to import the smallrye-health extension that implements the MicroProfile Health specification
-via CodeReady Workspaces Terminal:
+We will add a Qurakus extension to the Inventory application for using **smallrye-health** and we'll use the Quarkus Maven Plugin. Copy the following commands to import the smallrye-health extension that implements the MicroProfile Health specification via CodeReady Workspaces Terminal:
 
 Go to `inventory` directory and add the extension:
 
@@ -566,13 +580,13 @@ Go to `inventory` directory and add the extension:
 
 `mvn quarkus:add-extension -Dextensions="health"`
 
-####14. Run the health check
+#### 14. Run the health check
 
 ---
 
 When you import the _smallrye-health extension_, the `/health` endpoint is automatically exposed directly that can be used to run the health check procedures.
 
- * Run the Inventory application via `mvn compile quarkus:dev` or click on **Build and Run Locally** in Commands Palette:
+ * Run the Inventory application via `mvn compile quarkus:dev` or click on **build and run quarkus locally** in Commands Palette:
 
 ![codeready-workspace-maven]({% image_path quarkus-dev-run-paletter.png %})
 
@@ -656,13 +670,13 @@ With our new health check in place, we'll need to build and deploy the updated a
 
 `Tip`: You can define liveness probe using **@Liveness** annotation and the liveness check can be accessible at **/health/live** endpoint.
 
-####16. Re-Deploy to OpenShift
+#### 16. Re-Deploy to OpenShift
 
 ---
 
-Repackage the inventory application via clicking on **Package for OpenShift** in Commands Palette:
+Repackage the inventory application via clicking on **package quarkus for openshift** in Commands Palette:
 
-![codeready-workspace-maven]({% image_path quarkus-dev-run-packageforOcp.png %})
+![codeready-workspace-maven]({% image_path quarkus-dev-run-package-for-openshift.png %})
 
 Start and watch the build, which will take about a minute to complete:
 
