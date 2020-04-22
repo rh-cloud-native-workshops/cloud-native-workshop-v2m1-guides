@@ -1126,7 +1126,7 @@ Once the build is done, the coolstore pod will be deployed automatically via Dep
 
 `oc rollout status -w dc/coolstore -n userXX-coolstore-dev` (replace `userXX` with your username)
 
-####20. Test the UI
+#### 20. Test the UI
 
 ---
 
@@ -1141,7 +1141,7 @@ as it has been removed in our new catalog microservice.
 
 > Note: If the web page is still same then you should clean cookies and caches in your web browser.
 
-#####Congratulations!
+##### Congratulations!
 You have now successfully begun to _strangle_ the monolith. Part of the monolith's functionality (Inventory and Catalog) are
 now implemented as microservices.
 
